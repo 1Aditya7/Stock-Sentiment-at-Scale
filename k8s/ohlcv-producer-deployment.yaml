@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ohlcv-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ohlcv-producer
+  template:
+    metadata:
+      labels:
+        app: ohlcv-producer
+    spec:
+      containers:
+      - name: ohlcv-producer
+        image: ohlcv-producer:latest
+        imagePullPolicy: IfNotPresent
+        ports: []
+        env:
+        - name: KAFKA_BROKER
+          value: "localhost:9092"
