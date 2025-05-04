@@ -1,24 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ohlcv-producer
+  name: sentiment-analyzer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ohlcv-producer
+      app: sentiment-analyzer
   template:
     metadata:
       labels:
-        app: ohlcv-producer
+        app: sentiment-analyzer
     spec:
       containers:
-      - name: ohlcv-producer
-        image: ohlcv-producer:latest
+      - name: sentiment-analyzer
+        image: sentiment-analyzer:latest
         imagePullPolicy: IfNotPresent
-        ports: []
         env:
         - name: KAFKA_BOOTSTRAP_SERVERS
-          value: "kafka:9092"
-        - name: SYMBOLS
-          value: "AAPL,MSFT,TSLA"
+          value: "kafka.default.svc.cluster.local:9092"

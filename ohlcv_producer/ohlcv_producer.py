@@ -1,28 +1,36 @@
-# ohlcv_producer.py
-from kafka import KafkaProducer
-import yfinance as yf
+import os
 import json
 import time
-import os
-KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
+import yfinance as yf
+from kafka import KafkaProducer
 
+# Environment variables
+KAFKA_BROKER = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+SYMBOL_LIST = os.getenv("SYMBOLS", "AAPL,MSFT,TSLA").split(',')
+
+# Kafka Producer
 producer = KafkaProducer(
     bootstrap_servers=KAFKA_BROKER,
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+    value_serializer=lambda v: json.dumps(v).encode("utf-8")
 )
 
 topic = 'ohlcv_data'
 
-# Stock symbols you want to track
-symbols = ['AAPL', 'MSFT', 'TSLA']
+def fetch_and_send_ohlcv():
+    for symbol in SYMBOL_LIST:
+        try:
+            ticker = yf.Ticker(symbol)
+            data = ticker.history(period='1d', interval='1m')
 
-while True:
-    for symbol in symbols:
-        ticker = yf.Ticker(symbol)
-        data = ticker.history(period='1d', interval='1m')
-        
-        if not data.empty:
+            if data.empty:
+                print(f"⚠️ No data for {symbol}")
+                continue
+
             latest = data.iloc[-1]
+            if latest.isnull().any():
+                print(f"⚠️ Incomplete data for {symbol}")
+                continue
+
             message = {
                 "symbol": symbol,
                 "timestamp": str(latest.name),
@@ -34,6 +42,13 @@ while True:
             }
 
             producer.send(topic, value=message)
-            print(f"Sent OHLCV: {message}")
-    
-    time.sleep(60)  # Wait 1 minute before fetching again
+            print(f"📤 Sent OHLCV: {message}")
+
+        except Exception as e:
+            print(f"❌ Error fetching data for {symbol}: {e}")
+
+if __name__ == "__main__":
+    while True:
+        fetch_and_send_ohlcv()
+        print("✅ Fetched and sent OHLCV batch.")
+        time.sleep(60)

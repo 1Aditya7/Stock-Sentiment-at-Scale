@@ -1,24 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ohlcv-producer
+  name: news-producer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ohlcv-producer
+      app: news-producer
   template:
     metadata:
       labels:
-        app: ohlcv-producer
+        app: news-producer
     spec:
       containers:
-      - name: ohlcv-producer
-        image: ohlcv-producer:latest
+      - name: news-producer
+        image: news-producer:latest
         imagePullPolicy: IfNotPresent
-        ports: []
         env:
         - name: KAFKA_BOOTSTRAP_SERVERS
           value: "kafka:9092"
-        - name: SYMBOLS
-          value: "AAPL,MSFT,TSLA"

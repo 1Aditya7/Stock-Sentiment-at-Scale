@@ -1,24 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ohlcv-producer
+  name: trading-engine
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ohlcv-producer
+      app: trading-engine
   template:
     metadata:
       labels:
-        app: ohlcv-producer
+        app: trading-engine
     spec:
       containers:
-      - name: ohlcv-producer
-        image: ohlcv-producer:latest
+      - name: trading-engine
+        image: trading-engine:latest
         imagePullPolicy: IfNotPresent
-        ports: []
         env:
         - name: KAFKA_BOOTSTRAP_SERVERS
           value: "kafka:9092"
-        - name: SYMBOLS
-          value: "AAPL,MSFT,TSLA"

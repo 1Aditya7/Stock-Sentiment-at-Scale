@@ -1,28 +1,31 @@
-# news_producer.py
-from kafka import KafkaProducer
-import feedparser
+import os
 import json
 import time
+import feedparser
 from datetime import datetime, timezone
+from kafka import KafkaProducer
 
-# Initialize Kafka Producer
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+
 producer = KafkaProducer(
-    bootstrap_servers='localhost:9092',
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+    bootstrap_servers=KAFKA_BOOTSTRAP,
+    value_serializer=lambda v: json.dumps(v).encode("utf-8")
 )
 
-# Kafka topic for news
 topic = 'news_data'
 
-# RSS Feeds you want to scrape
 rss_feeds = [
-    'https://finance.yahoo.com/rss/topstories',     # Yahoo Finance Top Stories
-    'https://www.investing.com/rss/news_25.rss'      # Investing.com Financial News
+    'https://finance.yahoo.com/rss/topstories',
+    'https://www.investing.com/rss/news_25.rss'
 ]
 
 def fetch_and_send_news():
     for feed_url in rss_feeds:
         feed = feedparser.parse(feed_url)
+        if not feed.entries:
+            print(f"⚠️ No entries found in feed: {feed_url}")
+            continue
+
         for entry in feed.entries:
             news_item = {
                 "source": feed.feed.get("title", "Unknown Source"),
@@ -37,4 +40,4 @@ if __name__ == "__main__":
     while True:
         fetch_and_send_news()
         print("✅ Fetched and sent latest news batch.")
-        time.sleep(60)  # Wait for 1 minute before fetching again
+        time.sleep(60)
