@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Response
-from signals import get_signals, add_signal
+from sentiment_api.signals import get_signals, add_signal
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, Counter
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,8 +8,10 @@ app = FastAPI()
 # CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], allow_credentials=True,
-    allow_methods=["*"], allow_headers=["*"],
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"], 
+    allow_headers=["*"],
 )
 
 # Prometheus metric

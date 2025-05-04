@@ -2,10 +2,14 @@ import os
 import json
 import time
 from kafka import KafkaConsumer, KafkaProducer
+import requests
 
 # Kafka setup from environment
 KAFKA_BROKER = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 TRADE_SIGNAL_TOPIC = "trade_signals"
+
+# Global in-memory store
+latest_signals = []
 
 # Kafka Consumers
 sentiment_consumer = KafkaConsumer(
@@ -60,7 +64,12 @@ def process_sentiment(sentiment: dict):
             "reason": sentiment.get("title", "")
         }
         producer.send(TRADE_SIGNAL_TOPIC, value=trade_signal)
+        send_to_api(symbol, action.lower())
+        latest_signals.append(trade_signal)
         print(f"📤 Sent Trade Signal: {trade_signal}")
+
+def get_latest_signals():
+    return latest_signals[-50:]
 
 def main_loop():
     print("⚡ Trading Model Running...")
@@ -79,6 +88,12 @@ def main_loop():
         print("\n🛑 Trading model stopped by user.")
     except Exception as e:
         print(f"❌ Error in trading model: {e}")
+        
+def send_to_api(symbol, sentiment):
+    try:
+        requests.post("http://localhost:8000/add_signal", params={"symbol": symbol, "sentiment": sentiment})
+    except Exception as e:
+        print(f"❌ Failed to send signal to API: {e}")
 
 if __name__ == "__main__":
     main_loop()

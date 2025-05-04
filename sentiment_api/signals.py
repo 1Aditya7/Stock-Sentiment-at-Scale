@@ -1,4 +1,5 @@
 from typing import List
+from trading_model import get_latest_signals
 from datetime import datetime
 
 signals = []
@@ -10,5 +11,6 @@ def add_signal(symbol: str, sentiment: str):
         "timestamp": datetime.utcnow().isoformat()
     })
 
-def get_signals() -> List[dict]:
-    return signals[-50:]  # last 50 signals
+
+def get_signals():
+    return get_latest_signals()
